@@ -47,6 +47,8 @@ if (target_type == "drug"):
 			gene_row = row[GENES_POS].replace("\'","")
 			gene_row = row[GENES_POS].replace("\"","")
 			associated_genes = gene_row.split("|")
+			
+			orig_risk = float(row[RISK_SCORE_POS])
 			for assoc_gene in associated_genes:
 				gene_inputs.append(assoc_gene)
 			break
@@ -84,7 +86,8 @@ for gene_target in gene_inputs:
 	if(len(analysis_array) < 1):
 		continue
 	
-	analysis_array[scaled_risk_col] = analysis_array[raw_risk_col]/min(analysis_array[raw_risk_col])
+	
+	analysis_array[scaled_risk_col] = round(100 * analysis_array[raw_risk_col]/orig_risk, 2)
 	
 	analysis_array.sort_values([scaled_risk_col], ascending=True, inplace=True)
 	#print(min(analysis_array[raw_risk_col]))
@@ -100,7 +103,7 @@ for gene_target in gene_inputs:
 		#drug = analysis_array.loc[count - 1][0]
 		#raw = analysis_array.loc[count - 1][1]
 		#scaled = analysis_array.loc[count - 1][2]
-		print("Rank {}: {} with relative risk of {}".format(count, drug, scaled))
+		print("Rank {}: {} with relative risk of {}% of {}".format(count, drug, scaled, target))
 		count = count + 1
 	
 	
