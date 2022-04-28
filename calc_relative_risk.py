@@ -97,6 +97,7 @@ def main(target, target_type):
 		#print(analysis_array)
 		#quit()
 		
+		candidate_drugs = []
 		analysis_array.reset_index()
 		count = 1
 		for index, row in analysis_array.iterrows():
@@ -109,6 +110,7 @@ def main(target, target_type):
 
 			# validation for drug targets
 			if (target_type == "drug"):
+				candidate_drugs.append(drug)
 				approved_diseases = validate(target, drug)
 				if len(approved_diseases) == 0:
 					print("Rank {}: {} with relative risk of {}% of {} | Validation: {}".format(count, drug, scaled, target, 'FP'))
@@ -119,8 +121,16 @@ def main(target, target_type):
 			else:
 				print("Rank {}: {} with relative risk of {}% of {}".format(count, drug, scaled, target))
 			count = count + 1
-		
 
+		# DISPLAYING NEIGHBORING RESPURPOSABLE DRUGS
+		neighboring_repurposable_drugs = checkNeigbors(drug, candidate_drugs)
+		if len(neighboring_repurposable_drugs) > 0:
+			print("------------------------------------")
+			print('Neigboring Repurposable Drugs for the Drug {}:'.format(drug))
+			for drug_info in neighboring_repurposable_drugs:
+				diseases = ','.join([str(disease) for disease in drug_info[1]])
+				print("Drug {}: for diseases {}".format(drug_info[0], diseases))
+			
 if __name__ == "__main__":
 	inputParser = argparse.ArgumentParser(description="gives the rankings of compounds by risk score associated with common genes")
 	inputParser.add_argument("-i", type=str, nargs=1, help="target", required=True)
