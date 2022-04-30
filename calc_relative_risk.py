@@ -69,6 +69,7 @@ def main(target, target_type):
 	raw_risk_col = "Raw Risk Score"
 	scaled_risk_col = "Scaled Risk Score"
 	drug_col = "Drugs"
+
 	# for each gene, gives ranked list of compounds ordered by raw risk score
 	for gene_target in gene_inputs:
 
@@ -89,7 +90,6 @@ def main(target, target_type):
 		
 		if(len(analysis_array) < 1):
 			continue
-
 		analysis_array[scaled_risk_col] = round(100 * analysis_array[raw_risk_col]/orig_risk, 2)
 		
 		analysis_array.sort_values([scaled_risk_col], ascending=True, inplace=True)
@@ -97,6 +97,21 @@ def main(target, target_type):
 		#print(analysis_array)
 		#quit()
 		
+		# Filter the analysis_array (drugs to be ranked) wrt NEIGHBORING RESPURPOSABLE DRUGS
+		
+		if (target_type == "drug"):
+			candidate_drugs = np.asarray(analysis_array['Drugs'])
+			neighboring_repurposable_drugs = checkNeigbors(target, candidate_drugs)
+			if len(neighboring_repurposable_drugs) > 0:
+				print("------------------------------------")
+				print('-> Filtered wrt Neigboring Repurposable Drugs for the Drug {}:'.format(drug))
+				# removing drugs which do not appear within the candidate drugs
+				drug_names = [i[0] for i in neighboring_repurposable_drugs]
+				analysis_array = analysis_array[analysis_array.Drugs.isin(drug_names) == True]
+				print(drug_names)
+				print(analysis_array)
+			else:
+				print('-> Candidate Drugs are not found as neighbors, filtering could not be executed.')
 		candidate_drugs = []
 		analysis_array.reset_index()
 		count = 1
@@ -122,6 +137,7 @@ def main(target, target_type):
 				print("Rank {}: {} with relative risk of {}% of {}".format(count, drug, scaled, target))
 			count = count + 1
 
+		'''
 		# DISPLAYING NEIGHBORING RESPURPOSABLE DRUGS
 		neighboring_repurposable_drugs = checkNeigbors(drug, candidate_drugs)
 		if len(neighboring_repurposable_drugs) > 0:
@@ -130,7 +146,7 @@ def main(target, target_type):
 			for drug_info in neighboring_repurposable_drugs:
 				diseases = ','.join([str(disease) for disease in drug_info[1]])
 				print("Drug {}: for diseases {}".format(drug_info[0], diseases))
-			
+		'''
 if __name__ == "__main__":
 	inputParser = argparse.ArgumentParser(description="gives the rankings of compounds by risk score associated with common genes")
 	inputParser.add_argument("-i", type=str, nargs=1, help="target", required=True)
