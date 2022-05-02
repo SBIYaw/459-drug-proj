@@ -1,4 +1,3 @@
-# NOTE, needs flatBROAD_with_risk.csv to run
 
 import pandas as pd
 import argparse
@@ -10,18 +9,6 @@ DRUG_POS = 0
 GENES_POS = 3
 RISK_SCORE_POS = 6
 
-# manages inputs coming in to the python script
-'''
-inputParser = argparse.ArgumentParser(description="gives the rankings of compounds by risk score associated with common genes")
-inputParser.add_argument("-i", type=str, nargs=1, help="target", required=True)
-inputParser.add_argument("-t", type=str, nargs=1, help="target type", required=True)
-
-# parses the inputs into variables
-args = inputParser.parse_args()
-
-target = args.i[0]
-target_type = args.t[0]
-'''
 #target = "ADRB1"
 #target_type = "gene"
 

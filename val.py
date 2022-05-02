@@ -26,7 +26,7 @@ def get_broad():
     return broad
 
 # Validations Methods (to be called by the calc_relative_risk script)
-def validate(prim_drug: str, candidate_drug: str):
+def validate_bypair(prim_drug: str, candidate_drug: str):
     repodb = get_repoDB()
     broad = get_broad()
 
@@ -36,20 +36,30 @@ def validate(prim_drug: str, candidate_drug: str):
 
     return cand_approved_diseases_repodb + cand_approved_diseases_broad
 
+def get_approved_drugs(prim_drug: str):
+    ddr = get_DD_relations()
+    repodb = get_repoDB()
+    broad = get_broad()
+    approved_drugs = checkNeighbors(prim_drug, ddr, repodb, broad)
+
+    # the returned drugs are all TP.
+    return approved_drugs
+
 def checkDiseaseOverlap_repodb(prim_drug: str, candidate_drug: str, repodb):
     # getting the diseases assoc with the primary drug and the candidate drug
     prim_drug_diseases = repodb[repodb['drug'] == prim_drug]['ind_name'].to_numpy()
     prim_drug_diseases = list(map(lambda x: x.lower(), prim_drug_diseases))
 
-    cand_drug_status = repodb[repodb['drug'] == candidate_drug]['status'].to_numpy()
-    cand_drug_ind = repodb[repodb['drug'] == candidate_drug]['ind_name'].to_numpy()
-    cand_drug_diseases = [(cand_drug_ind[i], cand_drug_status[i]) for i in range(0, len(cand_drug_ind))]
-
-    # check whether the candidate drug can be used
     approved_for_diseases = []
-    for i in cand_drug_diseases:
-        if i[1] == "Approved" and i[0].lower() in prim_drug_diseases:
-            approved_for_diseases.append(i[0])
+    if len(candidate_drug) > 0:
+        cand_drug_status = repodb[repodb['drug'] == candidate_drug]['status'].to_numpy()
+        cand_drug_ind = repodb[repodb['drug'] == candidate_drug]['ind_name'].to_numpy()
+        cand_drug_diseases = [(cand_drug_ind[i], cand_drug_status[i]) for i in range(0, len(cand_drug_ind))]
+
+        # check whether the candidate drug can be used
+        for i in cand_drug_diseases:
+            if i[1] == "Approved" and i[0].lower() in prim_drug_diseases:
+                approved_for_diseases.append(i[0])
     
     '''
      returning diseases the candidate drug is approved for, which are also
@@ -61,26 +71,24 @@ def checkDiseaseOverlap_repodb(prim_drug: str, candidate_drug: str, repodb):
 
 def checkDiseaseOverlap_broad(prim_drug: str, candidate_drug: str, broad):
     # getting the diseases assoc with the primary drug and the candidate drug
-    prim_drug_dis = np.asarray(broad[broad['drug'] == prim_drug]['disease_area'])[0].split('|')
-    prim_drug_dis = list(map(lambda x: x.lower(), prim_drug_dis))
+    prim_drug_diseases = np.asarray(broad[broad['drug'] == prim_drug]['disease_area'])[0].split('|')
+    prim_drug_diseases = list(map(lambda x: x.lower(), prim_drug_diseases))
     
-    cand_drug_status = broad[broad['drug'] == candidate_drug]['clinical_phase'].to_numpy()
-    
-    cand_drug_ind = np.asarray(broad[broad['drug'] == candidate_drug]['disease_area'])[0]
-    if (cand_drug_ind != cand_drug_ind):
-        print('candidate drug ' + candidate_drug + ' has no disease information')
-        return []
-    cand_drug_ind = cand_drug_ind.split('|')
-    cand_drug_ind = list(map(lambda x: x.lower(), cand_drug_ind))
-    cand_drug_status = str(cand_drug_status[0])
-
-    # check whether the candidate drug can be used
     approved_for_diseases = []
-    if cand_drug_status == 'Launched' or cand_drug_status == 'Phase 3':
-        for i in cand_drug_ind:
-            if i in prim_drug_dis:
-                approved_for_diseases.append(i)
-    
+    if len(candidate_drug) > 0:
+        # ['Launched', 'Withdrawn', 'Phase 3']
+        cand_drug_status = broad[broad['drug'] == candidate_drug]['clinical_phase'].to_numpy()
+        cand_drug_ind = np.asarray(broad[broad['drug'] == candidate_drug]['disease_area'])[0].split('|')
+        cand_drug_ind = list(map(lambda x: x.lower(), cand_drug_ind))
+        cand_drug_status = str(cand_drug_status[0])
+
+        # check whether the candidate drug can be used
+        approved_for_diseases = []
+        if cand_drug_status == 'Launched' or cand_drug_status == 'Phase 3':
+            for i in cand_drug_ind:
+                if i in prim_drug_diseases:
+                    approved_for_diseases.append(i)
+        
     '''
      returning diseases the candidate drug is approved for, which are also
      the diseases assoc with the primary drug.
@@ -89,7 +97,7 @@ def checkDiseaseOverlap_broad(prim_drug: str, candidate_drug: str, broad):
     '''
     return approved_for_diseases
 
-def checkNeighbors_repodb(prim_drug: str, ddr, repodb):
+def checkNeighbors(prim_drug: str, ddr, repodb, broad):
     candidate_drugs = []
 
     drug_df = ddr[ddr['drug_a'] == prim_drug]    
@@ -102,12 +110,15 @@ def checkNeighbors_repodb(prim_drug: str, ddr, repodb):
         if drug[1] == 'Launched' or drug[1] == 'Phase 3':
             common_diseases = [i for i in drug[2] if i in prim_drug_diseases]
             if len(common_diseases) != 0:
-                print('LGTM! ',drug)
                 candidate_drugs.append((drug[0],common_diseases))
-    
-    return candidate_drugs
 
-def checkNeigbors(prim_drug: str, potential_drugs: list):
+    approved_drugs_by_repodb = checkDiseaseOverlap_repodb(prim_drug, candidate_drugs, repodb)
+    approved_drugs_by_broad = checkDiseaseOverlap_broad(prim_drug, candidate_drugs, broad)
+    approved_drugs = approved_drugs_by_repodb + approved_drugs_by_broad
+    
+    return approved_drugs
+'''
+def checkNeigbors_rank(prim_drug: str, potential_drugs: list):
     neighboring_repurposable_drugs = []
     ddr = get_DD_relations()
     repo_db = get_repoDB()
@@ -122,3 +133,4 @@ def checkNeigbors(prim_drug: str, potential_drugs: list):
                 neighboring_repurposable_drugs.append(n_drug[0], n_drug[1]) #returning the drug and its assoc diseases
 
     return neighboring_repurposable_drugs
+'''
