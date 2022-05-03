@@ -2,6 +2,7 @@
 
 import pandas as pd
 import numpy as np
+import math
 import sys
 
 def changeHeader(df):
@@ -11,7 +12,7 @@ def changeHeader(df):
     return df
 
 def get_DD_relations():
-    ddr = pd.read_csv('validation data/DDR_full_net.csv',header=None)
+    ddr = pd.read_csv('validation data/DDR_database_risk_fixed_rand_gene_1.csv',header=None)#('validation data/DDR_database_risk_fixed.csv',header=None)
     ddr = changeHeader(ddr)
     return ddr
 
@@ -78,8 +79,14 @@ def checkDiseaseOverlap_broad(prim_drug: str, candidate_drug: str, broad):
     if len(candidate_drug) > 0:
         # ['Launched', 'Withdrawn', 'Phase 3']
         cand_drug_status = broad[broad['drug'] == candidate_drug]['clinical_phase'].to_numpy()
-        cand_drug_ind = np.asarray(broad[broad['drug'] == candidate_drug]['disease_area'])[0].split('|')
-        cand_drug_ind = list(map(lambda x: x.lower(), cand_drug_ind))
+        cand_drug_ind = np.asarray(broad[broad['drug'] == candidate_drug]['disease_area'])[0]
+        
+        if(cand_drug_ind != cand_drug_ind):
+            return []
+
+        cand_drug_ind = cand_drug_ind.split('|')
+        
+        #cand_drug_ind = list(map(lambda x: x.lower(), cand_drug_ind))
         cand_drug_status = str(cand_drug_status[0])
 
         # check whether the candidate drug can be used
