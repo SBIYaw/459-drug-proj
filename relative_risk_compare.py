@@ -77,7 +77,7 @@ def processLine(line):
 	return(orig_line, genes, risk_score)
 
 
-broad_risk = readTable("flatBROAD_with_risk.csv")
+broad_risk = readTable("flatBROAD_random_gene_3.csv")
 ddr_out = []
 ddr = []
 
@@ -107,9 +107,10 @@ for line_A in broad_risk:
 
 header_row = ["drug_a", "clinical_phase_a","moa_a","target_a","disease_area_a","indication_a","risk_score_a", "scaled_risk_score", "total_overlaps","drug_b", "clinical_phase_b","moa_b","target_b","disease_area_b","indication_b","risk_score_b"]
 
-writeTable("DDR_database_risk_fixed.csv", ddr_out, header_row)
+writeTable("DDR_database_risk_fixed_rand_gene_3.csv", ddr_out, header_row)
 print("Wrote out DDR database!")
 
+quit()
 # flatten database into simple network - done
 ddr_net = []
 ddr_net_s = []
@@ -143,9 +144,10 @@ for data_row in ddr:
 
 new_header = header_row
 new_header.append("gene")
-writeTable("DDR_full_net_risk_fixed.csv", ddr_net, header_row)
+writeTable("DDR_full_net_risk_fixed_1.csv", ddr_net, header_row)
 print("Wrote out DDR full network!")
 
+quit()
 short_header = ["drug_a","scaled_risk_score","gene","drug_b"]
 writeTable("DDR_simple_net_risk_fixed.csv", ddr_net_s, short_header)
 print("Wrote out DDR simple network!")
