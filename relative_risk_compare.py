@@ -77,7 +77,7 @@ def processLine(line):
 	return(orig_line, genes, risk_score)
 
 
-broad_risk = readTable("flatBROAD_with_risk.csv")
+broad_risk = readTable("validation data/flatBROAD_random_gene_5.csv")
 ddr_out = []
 ddr = []
 
@@ -143,11 +143,11 @@ for data_row in ddr:
 
 new_header = header_row
 new_header.append("gene")
-writeTable("DDR_full_net_risk_fixed.csv", ddr_net, header_row)
+writeTable("DDR_full_net_risk_fixed_5.csv", ddr_net, header_row)
 print("Wrote out DDR full network!")
 
 short_header = ["drug_a","scaled_risk_score","gene","drug_b"]
-writeTable("DDR_simple_net_risk_fixed.csv", ddr_net_s, short_header)
+writeTable("DDR_simple_net_risk_fixed_5.csv", ddr_net_s, short_header)
 print("Wrote out DDR simple network!")
 
 print("Done!")

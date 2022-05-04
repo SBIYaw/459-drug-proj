@@ -12,7 +12,7 @@ def changeHeader(df):
     return df
 
 def get_DD_relations():
-    ddr = pd.read_csv('validation data/DDR_database_risk_fixed_rand_gene_1.csv',header=None)#('validation data/DDR_database_risk_fixed.csv',header=None)
+    ddr = pd.read_csv('DDR_full_net_risk_fixed_6.csv',header=None)
     ddr = changeHeader(ddr)
     return ddr
 
