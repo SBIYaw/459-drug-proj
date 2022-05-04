@@ -1,4 +1,4 @@
 # 459-drug-proj
-Drug repurposing analysis code for CSDS459 project
+Drug Repurposing - Network-Based Analysis
 
 ![WorkflowDiagram](/DD_Workflow.png)
